@@ -42,24 +42,49 @@ def process_md_file(md_file_path, progress_callback=None):
             with open(md_file_path, 'r', encoding='gbk') as f:
                 content = f.read()
 
-        # 查找图片链接
-        pattern = r'!\[([^\]]+)\]\((\.\/img\/[^\)]+)\)'
+        # 查找图片链接 - 改进正则表达式以匹配更多格式
+        pattern = r'!\[([^\]]+)\]\(([^\)]+)\)'
         matches = re.findall(pattern, content)
+        
+        # 跟踪所有图片描述和路径的映射关系
+        desc_to_path = {}
+        path_to_desc = {}
         desc_set = set()
+        
         new_content = content
         img_count = 0
-
-        # 处理每个图片
-        for i, (alt_text, old_path) in enumerate(matches):
-            # 构建完整路径
+        
+        # 第一步：收集所有图片描述和路径
+        for alt_text, img_path in matches:
             # 规范化路径，解决Windows路径问题
-            normalized_old_path = os.path.normpath(old_path)
-            old_full_path = os.path.join(base_dir, normalized_old_path)
+            normalized_path = os.path.normpath(img_path)
             
-            if not os.path.exists(old_full_path):
-                logger.info(f"⚠️ 找不到图片：{old_full_path}，跳过")
+            # 记录描述和路径的对应关系
+            desc_to_path[alt_text] = normalized_path
+            path_to_desc[normalized_path] = alt_text
+
+        # 第二步：处理每个图片
+        processed_paths = set()  # 跟踪已处理的路径
+        
+        for i, (alt_text, img_path) in enumerate(matches):
+            # 规范化路径
+            normalized_img_path = os.path.normpath(img_path)
+            
+            # 如果此路径已处理过，跳过
+            if normalized_img_path in processed_paths:
+                continue
+                
+            processed_paths.add(normalized_img_path)
+            
+            # 构建完整路径
+            img_full_path = os.path.abspath(os.path.join(base_dir, normalized_img_path))
+            
+            # 检查文件是否存在
+            if not os.path.exists(img_full_path):
+                logger.info(f"⚠️ 找不到图片：{img_full_path}，跳过")
                 continue
 
+            # 处理重复描述
             if alt_text in desc_set:
                 # 重复描述，提供唯一名称
                 base_alt = alt_text
@@ -72,17 +97,17 @@ def process_md_file(md_file_path, progress_callback=None):
             desc_set.add(alt_text)
 
             # 生成新文件名和路径
-            file_ext = os.path.splitext(old_full_path)[1]
+            file_ext = os.path.splitext(img_full_path)[1]
             safe_alt_text = sanitize_filename(alt_text)
             new_filename = f"{safe_alt_text}{file_ext}"
             
-            # 构建新路径，确保统一格式
-            new_relative_path = f"./img/{new_filename}"
-            normalized_new_path = os.path.normpath(new_relative_path)
-            new_full_path = os.path.join(base_dir, new_relative_path)
+            # 确保新文件保存在img文件夹中
+            img_dir = os.path.join(base_dir, "img")
+            new_full_path = os.path.join(img_dir, new_filename)
+            new_relative_path = os.path.join("./img", new_filename).replace("\\", "/")
 
             # 判断源路径和目标路径是否相同
-            if os.path.normcase(old_full_path) == os.path.normcase(new_full_path):
+            if os.path.normcase(img_full_path) == os.path.normcase(new_full_path):
                 logger.info(f"图片名称已经符合要求: {new_filename}")
                 continue
 
@@ -93,15 +118,20 @@ def process_md_file(md_file_path, progress_callback=None):
                     os.remove(new_full_path)
                 
                 # 复制而不是移动，避免源文件不存在的问题
-                shutil.copy2(old_full_path, new_full_path)
+                shutil.copy2(img_full_path, new_full_path)
                 
                 # 源文件和目标文件不同才计算为成功处理
-                if os.path.normcase(old_full_path) != os.path.normcase(new_full_path):
+                if os.path.normcase(img_full_path) != os.path.normcase(new_full_path):
                     img_count += 1
-                    logger.info(f"已处理: {os.path.basename(old_full_path)} -> {new_filename}")
+                    logger.info(f"已处理: {os.path.basename(img_full_path)} -> {new_filename}")
                 
-                # 替换文件内容中的路径
-                new_content = new_content.replace(old_path, new_relative_path)
+                # 替换文件内容中的所有此图片路径实例
+                for orig_path in matches:
+                    if os.path.normpath(orig_path[1]) == normalized_img_path:
+                        orig_text = f"![{orig_path[0]}]({orig_path[1]})"
+                        new_text = f"![{orig_path[0]}]({new_relative_path})"
+                        new_content = new_content.replace(orig_text, new_text)
+                
             except Exception as e:
                 logger.info(f"处理图片时出错: {e}")
                 continue

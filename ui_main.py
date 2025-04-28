@@ -165,7 +165,7 @@ class MainWindow(QWidget):
         btn_css = """
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                          stop:0 #5ab9ff, stop:1 #4da6ff);
+                                           stop:0 #5ab9ff, stop:1 #4da6ff);
                 color: white;
                 border: none;
                 border-radius: 10px;
@@ -175,11 +175,11 @@ class MainWindow(QWidget):
             }
             QPushButton:hover { 
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                          stop:0 #4da6ff, stop:1 #3a93ff); 
+                                           stop:0 #4da6ff, stop:1 #3a93ff); 
             }
             QPushButton:pressed { 
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                          stop:0 #3a93ff, stop:1 #2788ee); 
+                                           stop:0 #3a93ff, stop:1 #2788ee); 
             }
         """
 
@@ -235,7 +235,7 @@ class MainWindow(QWidget):
             }
             QProgressBar::chunk {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                          stop:0 #4da6ff, stop:1 #4e72f9);
+                                           stop:0 #4da6ff, stop:1 #4e72f9);
                 border-radius: 6px;
             }
         """)
