@@ -21,19 +21,13 @@
 
 ## 安装方法
 
-### 方法一：直接使用可执行文件（推荐）
-
-1. 从[Releases](https://github.com/yourusername/markdown_rename_tool/releases)页面下载最新版本的可执行文件
-2. 解压后双击 `markdown_rename_tool.exe` 即可使用
-3. 可以创建快捷方式到桌面，方便日常使用
-
-### 方法二：从源码运行
+### 从源码运行
 
 如果你想从源码运行或进行开发，请按照以下步骤操作：
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/markdown_rename_tool.git
+git clone https://github.com/Jinzedev/markdown_rename_tool.git
 
 # 进入项目目录
 cd markdown_rename_tool
