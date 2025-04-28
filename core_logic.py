@@ -14,24 +14,25 @@ def sanitize_filename(name):
         name = name.replace(ch, "_")
     return name
 
-def process_md_file(md_file_path, progress_callback=None):
+def process_md_file(md_file_path, progress_callback=None, img_dir_name="img"):
     """处理单个Markdown文件中的图片链接
     
     Args:
         md_file_path: Markdown文件路径
         progress_callback: 进度回调函数
+        img_dir_name: 图片保存目录名称，默认为"img"
         
     Returns:
         处理的图片数量
     """
     try:
         base_dir = os.path.dirname(md_file_path)
-        img_folder_path = os.path.join(base_dir, "img")
+        img_folder_path = os.path.join(base_dir, img_dir_name)
 
         # 检查img文件夹是否存在
         if not os.path.exists(img_folder_path):
             os.makedirs(img_folder_path, exist_ok=True)
-            logger.info(f"已创建 img 文件夹: {img_folder_path}")
+            logger.info(f"已创建 {img_dir_name} 文件夹: {img_folder_path}")
 
         # 读取Markdown文件内容
         try:
@@ -101,10 +102,11 @@ def process_md_file(md_file_path, progress_callback=None):
             safe_alt_text = sanitize_filename(alt_text)
             new_filename = f"{safe_alt_text}{file_ext}"
             
-            # 确保新文件保存在img文件夹中
-            img_dir = os.path.join(base_dir, "img")
+            # 确保新文件保存在指定文件夹中
+            img_dir = os.path.join(base_dir, img_dir_name)
             new_full_path = os.path.join(img_dir, new_filename)
-            new_relative_path = os.path.join("./img", new_filename).replace("\\", "/")
+            # 使用用户指定的目录构建新路径
+            new_relative_path = f"./{img_dir_name}/{new_filename}".replace("\\", "/")
 
             # 判断源路径和目标路径是否相同
             if os.path.normcase(img_full_path) == os.path.normcase(new_full_path):

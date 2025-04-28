@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QPushButton, QFileDialog, QProgressBar,
-    QMenuBar, QMenu, QFrame, QHBoxLayout, QMessageBox, QGraphicsDropShadowEffect
+    QMenuBar, QMenu, QFrame, QHBoxLayout, QMessageBox, QGraphicsDropShadowEffect,
+    QLineEdit
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui  import QColor, QDragEnterEvent, QDropEvent, QFont, QIcon, QPixmap
@@ -159,6 +160,40 @@ class MainWindow(QWidget):
         """)
         main_layout.addWidget(self.label_info)
 
+        # ------ 图片目录设置 ------
+        img_dir_layout = QHBoxLayout()
+        img_dir_layout.setSpacing(10)
+        
+        # 图片目录标签
+        self.img_dir_label = QLabel(self.texts()["img_dir_label"])
+        self.img_dir_label.setStyleSheet("""
+            color: #5a6a7f;
+            font-size: 14px;
+        """)
+        
+        # 图片目录输入框
+        self.img_dir_input = QLineEdit("img")
+        self.img_dir_input.setPlaceholderText("img")
+        self.img_dir_input.setMaximumWidth(150)
+        self.img_dir_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                padding: 5px 10px;
+                background: white;
+                color: #333;
+            }
+            QLineEdit:focus {
+                border: 1px solid #4da6ff;
+            }
+        """)
+        
+        # 布局添加控件
+        img_dir_layout.addWidget(self.img_dir_label)
+        img_dir_layout.addWidget(self.img_dir_input)
+        img_dir_layout.addStretch()
+        
+        main_layout.addLayout(img_dir_layout)
 
         # ------ 操作按钮 ------
         # 按钮统一样式
@@ -231,7 +266,6 @@ class MainWindow(QWidget):
             QProgressBar {
                 background: #e1e1e1;
                 border-radius: 6px;
-                margin-top: 5px;
             }
             QProgressBar::chunk {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -278,7 +312,8 @@ class MainWindow(QWidget):
                 "success_msg": "处理成功！已重命名 {0} 个图片文件。",
                 "no_img_msg": "未找到需要处理的图片文件。",
                 "success_title": "处理成功",
-                "language_text": "语言"
+                "language_text": "语言",
+                "img_dir_label": "图片目录"
             },
             "en": {
                 "title": "Markdown Image Rename Tool",
@@ -290,7 +325,8 @@ class MainWindow(QWidget):
                 "success_msg": "Success! Renamed {0} image files.",
                 "no_img_msg": "No images found to process.",
                 "success_title": "Success",
-                "language_text": "Language"
+                "language_text": "Language",
+                "img_dir_label": "Image Directory"
             }
         }[self.lang]
 
@@ -305,6 +341,7 @@ class MainWindow(QWidget):
         self.btn_theme.setText(t["theme_switch"])
         self.drop_box.setText(t["drag_hint"])
         self.btn_lang.setText(t["language_text"])
+        self.img_dir_label.setText(t["img_dir_label"])
 
     # ---------- 文件选择 ----------
     def open_files(self):
@@ -390,8 +427,13 @@ class MainWindow(QWidget):
         self.progress.setValue(0)
         self.status_label.setText("")
         
+        # 获取用户设置的图片目录
+        img_dir_name = self.img_dir_input.text().strip()
+        if not img_dir_name:
+            img_dir_name = "img"  # 默认值
+        
         for p in paths:
-            img_count = core_logic.process_md_file(p, self.update_progress)
+            img_count = core_logic.process_md_file(p, self.update_progress, img_dir_name)
             total_img_count += img_count
         
         self.progress.setValue(100)
@@ -508,6 +550,21 @@ class MainWindow(QWidget):
             # 深色模式下的logo标签
             self.logo_label.setStyleSheet("background-color: transparent;")
             
+            # 深色模式下的图片目录输入框
+            self.img_dir_label.setStyleSheet("color: #aaaaaa; font-size: 14px;")
+            self.img_dir_input.setStyleSheet("""
+                QLineEdit {
+                    border: 1px solid #464e5c;
+                    border-radius: 5px;
+                    padding: 5px 10px;
+                    background: #333842;
+                    color: #e5e5e5;
+                }
+                QLineEdit:focus {
+                    border: 1px solid #4da6ff;
+                }
+            """)
+            
             # 深色模式下的拖拽区域
             self.reset_drop_style_dark()
             
@@ -596,6 +653,21 @@ class MainWindow(QWidget):
             
             # 浅色模式下的logo标签
             self.logo_label.setStyleSheet("background-color: transparent;")
+            
+            # 浅色模式下的图片目录输入框
+            self.img_dir_label.setStyleSheet("color: #5a6a7f; font-size: 14px;")
+            self.img_dir_input.setStyleSheet("""
+                QLineEdit {
+                    border: 1px solid #e0e0e0;
+                    border-radius: 5px;
+                    padding: 5px 10px;
+                    background: white;
+                    color: #333;
+                }
+                QLineEdit:focus {
+                    border: 1px solid #4da6ff;
+                }
+            """)
             
             # 浅色模式下的拖拽区域
             self.reset_drop_style()
