@@ -15,6 +15,17 @@ def refresh_icon_cache():
     except Exception as e:
         print(f"刷新图标缓存失败: {e}")
 
+def resource_path(relative_path):
+    """获取资源的绝对路径，兼容开发环境和PyInstaller打包后的环境"""
+    try:
+        # PyInstaller创建临时文件夹，将路径存储在_MEIPASS中
+        base_path = sys._MEIPASS
+    except Exception:
+        # 不是通过PyInstaller打包，使用当前文件夹
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
+
 if __name__ == "__main__":
     # 尝试刷新图标缓存
     refresh_icon_cache()
@@ -22,8 +33,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     # 使用绝对路径获取图标
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    icon_path = os.path.join(current_dir, "resources", "logo.png")
+    icon_path = resource_path(os.path.join("resources", "logo.png"))
     
     # 设置应用程序图标（任务栏显示）
     app_icon = QIcon(icon_path)

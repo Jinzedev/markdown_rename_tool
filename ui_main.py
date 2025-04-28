@@ -6,8 +6,19 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui  import QColor, QDragEnterEvent, QDropEvent, QFont, QIcon, QPixmap
 
 import os
+import sys
 import core_logic
 
+def resource_path(relative_path):
+    """获取资源的绝对路径，兼容开发环境和PyInstaller打包后的环境"""
+    try:
+        # PyInstaller创建临时文件夹，将路径存储在_MEIPASS中
+        base_path = sys._MEIPASS
+    except Exception:
+        # 不是通过PyInstaller打包，使用当前文件夹
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
 
 # ---------- 主窗口 ----------
 class MainWindow(QWidget):
@@ -22,8 +33,7 @@ class MainWindow(QWidget):
         self.setAcceptDrops(True)
         
         # 设置应用图标
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.join(current_dir, "resources", "logo.png")
+        icon_path = resource_path(os.path.join("resources", "logo.png"))
         self.setWindowIcon(QIcon(icon_path))
 
         # 背景色（浅灰）+ 全局字体
@@ -121,8 +131,7 @@ class MainWindow(QWidget):
         self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.logo_label.setFixedHeight(80)
         # 设置Logo图片
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        logo_path = os.path.join(current_dir, "resources", "logo.png")
+        logo_path = resource_path(os.path.join("resources", "logo.png"))
         logo_pixmap = QPixmap(logo_path)
         logo_pixmap = logo_pixmap.scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.logo_label.setPixmap(logo_pixmap)
